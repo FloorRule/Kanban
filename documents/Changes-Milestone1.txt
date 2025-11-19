@@ -1,0 +1,44 @@
+commit: 13.05.25
+UserFacade:
+	- changed return type of Register, Login, Logout from string to void, there is no need to return "success"
+	- removed the try-catch in Register, Login, Logout to simplify HandleAuth in UseService
+	- incorpareted logging into each exception throw
+
+UserBL:
+	- shorten the long if in IsValidPassword to parts
+
+UserService:
+	- updated PerformAuthOperation to void
+	- simplified HandleAuth 
+	- removed the redundent "success" check from HandleAuth now that PerformAuthOperation doesnt returned string
+	
+TaskService:
+	- removed comments about exceptions
+
+BoardService:
+	- updated variable with "var" types to their respective function return type in GetUserBoards and GetAllColumns
+	
+BoardFacade:
+	- simplified the check of board name string in handleBoardName using string.IsNullOrEmpty()
+	- corrected the LimitColumn's newTaskLimit to include 0 as a positive limit
+	- changed return type of CreateBoard, DeleteBoard, LimitColumn, RemoveTask, UpdateTask, MoveTaskForwards
+		 from string to void, there is no need to return "success".
+	- turned repeated input check into functions
+	- incorpareted logging into each exception throw
+
+ColumnBL:
+	- added a new function canTaskBeAdded() to check if a task can be added
+	- improved the AddTask(TaskBL task) with the new use of the new funtion
+
+BoardBL:
+	- simplified the logic in FindTaskColumn to fix potential test fails
+	- fixed logic error in MoveTaskForwards(missing check to see if there room for new tasks before removing)
+
+BoardFacadeTests:
+	- updated tests to fit changes in BoardFacade
+
+UserFacadeTests:
+	- updated tests to fit changes in UserFacade
+
+GradingService:
+	- added the new shell functions

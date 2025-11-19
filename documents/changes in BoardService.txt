@@ -1,0 +1,8 @@
+Commit: 27.05.2025
+BoardService:
+	- Added boardConverterSL.
+	- Added columnConverterSL.
+	- Deleted a comment in boardConverterSL.
+	- Connecter the convertor to GetAllColumns.
+	- Connecter the convertor to GetUserBoards.
+	- Fixed the convertor in GetAllColumns.

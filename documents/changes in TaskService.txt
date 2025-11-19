@@ -1,0 +1,5 @@
+Commit: 27.05.2025
+TaskService:
+	- Added taskConverterSL.
+	- Connected the converter to InProgressTasks.
+=

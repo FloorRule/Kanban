@@ -1,0 +1,321 @@
+﻿<UserControl x:Class="Frontend.View.KanbanBoardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d"
+             xmlns:viewModel="clr-namespace:Frontend.ViewModel"
+             xmlns:local="clr-namespace:Frontend.View"
+             d:DataContext="{d:DesignInstance Type=viewModel:BoardViewModel}"
+             d:DesignHeight="600" d:DesignWidth="950">
+
+    <UserControl.Resources>
+        <Style x:Key="VerticalSpacingStyle" TargetType="FrameworkElement">
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
+        <Style x:Key="InvisibleButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <viewModel:ColorCode x:Key="ColorConverter"/>
+        <viewModel:TaskActionPermissionConverter x:Key="TaskPermissionConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+        <DataTemplate x:Key="TaskCardTemplate">
+            <Grid Margin="8" MinHeight="105">
+                <materialDesign:Flipper>
+                    <!-- =================== FRONT OF CARD =================== -->
+                    <materialDesign:Flipper.FrontContent>
+                        <Grid>
+                            <materialDesign:Card Padding="0" Width="260" BorderBrush="#FFB16666" Background="{Binding Color}">
+                                <!-- Card content remains the same -->
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Margin="16,16,40,4" FontWeight="Bold" Text="{Binding Title}" TextWrapping="Wrap"/>
+                                    <Separator Grid.Row="1" Margin="10,2"/>
+                                    <StackPanel Grid.Row="2" Margin="16,8,16,16">
+                                        <TextBlock Text="{Binding DueDate, StringFormat='Due: dd MMM yyyy'}" Opacity=".7"/>
+                                        <TextBlock Text="{Binding Assignee, StringFormat='Assignee: {0}', FallbackValue='Unassigned'}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </materialDesign:Card>
+
+                            <!-- FIX: Apply the new style to the button to make it truly invisible -->
+                            <Button Command="{x:Static materialDesign:Flipper.FlipCommand}" Style="{StaticResource InvisibleButtonStyle}"/>
+
+                            <!-- The floating action button for moving tasks is unaffected by this change -->
+                            <Button Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,5,0" 
+                            ToolTip="Move Task Forward"
+                            Command="{Binding DataContext.MoveTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}" Width="32" Height="32">
+                                <Button.IsEnabled>
+                                    <MultiBinding Converter="{StaticResource TaskPermissionConverter}">
+                                        <Binding Path="Assignee"/>
+                                        <Binding Path="DataContext.LoggedInUserEmail" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                    </MultiBinding>
+                                </Button.IsEnabled>
+                                <materialDesign:PackIcon Kind="ArrowRightBold" />
+                            </Button>
+                        </Grid>
+                    </materialDesign:Flipper.FrontContent>
+
+                    <!-- =================== BACK OF CARD =================== -->
+                    <materialDesign:Flipper.BackContent>
+                        <Grid>
+                            <!-- FIX: Set the same Width on the back card -->
+                            <materialDesign:Card Padding="0" Width="260" Background="{Binding Color}" BorderBrush="#FFB16666">
+                                <!-- Card content remains the same -->
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="1"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0" Margin="4">
+                                        <Button Command="{x:Static materialDesign:Flipper.FlipCommand}" Padding="4" VerticalAlignment="Center" HorizontalAlignment="Left" Background="Transparent" ToolTip="Flip Back">
+                                            <materialDesign:PackIcon Kind="ArrowLeft" Width="20" Height="20"/>
+                                        </Button>
+                                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Margin="40,0,8,0" TextTrimming="CharacterEllipsis" FontWeight="SemiBold"/>
+                                    </Grid>
+                                    <Border Grid.Row="1" Background="#FFD0D0D0"/>
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" Height="Auto" Margin="4"
+                                        Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" Background="Transparent" BorderBrush="Transparent">
+                                            <Button.IsEnabled>
+                                                <MultiBinding Converter="{StaticResource TaskPermissionConverter}">
+                                                    <Binding Path="Assignee"/>
+                                                    <Binding Path="DataContext.LoggedInUserEmail" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                </MultiBinding>
+                                            </Button.IsEnabled>
+                                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                                <materialDesign:PackIcon Kind="TrashCan" Foreground="Red" Width="24" Height="24" Margin="5,0,0,4" ToolTip="Delete Task"/>
+                                                <TextBlock Text="Delete" Foreground="Red"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8">
+                                            <TextBlock Text="Assign to:" Margin="0,0,0,4"/>
+                                            <ComboBox ItemsSource="{Binding DataContext.AssignableMembers, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              SelectedItem="{Binding Assignee}"
+                                              materialDesign:HintAssist.Hint="Select Member">
+                                                <ComboBox.IsEnabled>
+                                                    <MultiBinding Converter="{StaticResource TaskPermissionConverter}">
+                                                        <Binding Path="Assignee"/>
+                                                        <Binding Path="DataContext.LoggedInUserEmail" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                    </MultiBinding>
+                                                </ComboBox.IsEnabled>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </materialDesign:Card>
+                        </Grid>
+                    </materialDesign:Flipper.BackContent>
+                </materialDesign:Flipper>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Background="LightSlateGray">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" MinHeight="64"/>
+            <!-- Header -->
+            <RowDefinition Height="Auto" MinHeight="44"/>
+            <!-- Members -->
+            <RowDefinition Height="Auto"/>
+            <!-- Column Headers -->
+            <RowDefinition Height="*"/>
+            <!-- Column Content -->
+        </Grid.RowDefinitions>
+
+        <!-- HEADER BAR -->
+        <materialDesign:Card Grid.Row="0" Padding="8,4" Margin="4,4,4,4" materialDesign:ElevationAssist.Elevation="Dp4" Background="White">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" VerticalAlignment="Center" BorderBrush="#FFC3C2C2" Command="{Binding BackCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ArrowLeft" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                        <TextBlock Text="Back" FontSize="16" VerticalAlignment="Center" Width="36"/>
+                    </StackPanel>
+                </Button>
+                <TextBlock Grid.Column="1" Text="{Binding Board.Name, StringFormat='Board Name: {0}'}" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Margin="35,0,14,0"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <!-- Button with an icon and dynamic width -->
+                    <Button Margin="0,0,16,0" 
+        Command="{Binding LeaveBoardCommand}" 
+        IsEnabled="{Binding IsBoardMember}" Width="66">
+
+                        <!-- The visibility logic remains the same -->
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOwner}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+
+                        <!-- New content with an icon and text -->
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ExitToApp" 
+                                     VerticalAlignment="Center" 
+                                     Margin="0,0,8,0" />
+                                <TextBlock Text="Leave" 
+                       VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <materialDesign:Chip Grid.Column="2" Content="{Binding ChipName}" IconBackground="{Binding IconColor}" VerticalAlignment="Top" Margin="15,4,0,0" 
+                                         Grid.RowSpan="2" Width="83"
+                                         IsHitTestVisible="False"
+                                         Focusable="False">
+                        <materialDesign:Chip.Icon>
+                            <materialDesign:PackIcon Kind="AccountCircle"/>
+                        </materialDesign:Chip.Icon>
+                    </materialDesign:Chip>
+                </StackPanel>
+            </Grid>
+        </materialDesign:Card>
+
+        <TextBlock Grid.Row="1" Text="Members:" Foreground="Snow" FontWeight="Bold" Margin="5,15,0,0"></TextBlock>
+
+        <!-- MEMBERS STRIP -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Board.Members}" Margin="68,0,0,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <materialDesign:PopupBox
+                        Style="{StaticResource MaterialDesignToolPopupBox}"
+                        PlacementMode="BottomAndAlignCentres"
+                        StaysOpen="False"
+                        IsEnabled="{Binding DataContext.IsOwner,
+                            RelativeSource={RelativeSource AncestorType=UserControl}}">
+
+                        <!-- Toggle visual -->
+                        <materialDesign:PopupBox.ToggleContent>
+                            <materialDesign:Chip
+                                Content="{Binding}"
+                                Margin="0,0,8,0"
+                                Foreground="Snow"
+                                Background="{Binding Converter={StaticResource ColorConverter}}"
+                                IsHitTestVisible="False"
+                                Focusable="False"/> 
+                        </materialDesign:PopupBox.ToggleContent>
+
+                        <!-- Popup body -->
+                        <Button  Command="{Binding DataContext.TransferOwnershipCommand,
+                                 RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 CommandParameter="{Binding}" Height="40" Margin="0,-10,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="AccountStar" Margin="0,0,8,0"/>
+                                <TextBlock Text="Promote to Owner"/>
+                            </StackPanel>
+                        </Button>
+                    </materialDesign:PopupBox>
+
+
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- COLUMN HEADERS -->
+        <Grid Grid.Row="2" Margin="8,8,8,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" BorderBrush="#FFE4E4E4" BorderThickness="1" CornerRadius="4" Padding="4" Margin="4,0" Background="#FFFFE5E5">
+                <Grid>
+                    <TextBlock Text="Back-Log" FontSize="16" FontWeight="Bold" Foreground="#FF5B5B5B" TextDecorations="Underline" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <!-- Add Task Button -->
+                    <materialDesign:PopupBox Grid.Row="1"
+                         Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
+                         PlacementMode="BottomAndAlignLeftEdges"
+                         HorizontalAlignment="Left"
+                         StaysOpen="True"
+                         ToolTip="Add New Task"
+                         UnfurlOrientation="Horizontal"
+                         Width="32" Height="32"
+                         IsEnabled="{Binding IsBoardMember}" Background="#FF6CC571">
+
+                        <materialDesign:Card Width="300">
+                            <StackPanel Margin="16" DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                <TextBlock Text="Task Creation:" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,8" Foreground="Black" FontWeight="Bold" TextDecorations="Underline"/>
+
+                                <TextBox Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="Task Title"
+                                     Text="{Binding NewTaskTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,8" Foreground="Black"/>
+
+                                <TextBox Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="Description"
+                                     Text="{Binding NewTaskDescription}" Margin="0,5,0,8" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="80" Foreground="Black"/>
+
+                                <DatePicker Style="{StaticResource MaterialDesignOutlinedDatePicker}" Height="80" materialDesign:HintAssist.Hint="Pick Due Date" Margin="0,1,0,1"
+                                        SelectedDate="{Binding NewTaskDueDate}" Foreground="Black"/>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                                    <Button Content="Create" Command="{Binding AddTaskCommand}" Style="{StaticResource MaterialDesignRaisedButton}" Margin="0,0,8,0" Background="#FF6CC571"/>
+                                    <Button Content="Cancel" Command="{x:Static materialDesign:PopupBox.ClosePopupCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </materialDesign:PopupBox>
+                </Grid>
+            </Border>
+            <Border Grid.Column="1" BorderBrush="#FFE4E4E4" BorderThickness="1" CornerRadius="4" Padding="4" Margin="4,0" Background="#FFFDFDDC">
+                <TextBlock Text="In-Progress" FontSize="16" FontWeight="Bold" Foreground="#FF5B5B5B" TextDecorations="Underline" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <Border Grid.Column="2" BorderBrush="#FFE4E4E4" BorderThickness="1" CornerRadius="4" Padding="4" Margin="4,0" Background="#FFE9FBE7">
+                <TextBlock Text="Done" FontSize="16" FontWeight="Bold" Foreground="#FF5B5B5B" TextDecorations="Underline" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </Grid>
+
+        <!-- KANBAN CONTENT -->
+        <Grid Grid.Row="3" Margin="8,0,8,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Background="#55FBD7D7">
+                <ItemsControl ItemsSource="{Binding Board.BacklogColumn.Tasks}" ItemTemplate="{StaticResource TaskCardTemplate}"/>
+            </ScrollViewer>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Background="#55F9FBD7">
+                <ItemsControl ItemsSource="{Binding Board.InProgressColumn.Tasks}" ItemTemplate="{StaticResource TaskCardTemplate}"/>
+            </ScrollViewer>
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" Background="#55E0FBD7">
+                <ItemsControl ItemsSource="{Binding Board.DoneColumn.Tasks}" ItemTemplate="{StaticResource TaskCardTemplate}"/>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

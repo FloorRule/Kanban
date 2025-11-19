@@ -1,0 +1,195 @@
+﻿<UserControl x:Class="Frontend.View.KanbanMyBoards"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      mc:Ignorable="d"
+      xmlns:viewModel="clr-namespace:Frontend.ViewModel"
+      d:DataContext="{d:DesignInstance Type=viewModel:MyBoardsViewModel}"
+      Height="570" Width="850"
+      Background="LightSlateGray">
+
+    <!-- ────────────────────────────  LAYOUT  ──────────────────────────── -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- Header bar (navigation + user controls) -->
+            <RowDefinition Height="Auto"/>
+            <!-- Main content (board cards) -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═════════════════════  HEADER  ═════════════════════ -->
+        <materialDesign:Card Grid.Row="0" Padding="0" materialDesign:ElevationAssist.Elevation="Dp4" Margin="0,11,0,509" Grid.RowSpan="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto" MinWidth="112"/>
+                    <ColumnDefinition Width="Auto" MinWidth="112"/>
+                </Grid.ColumnDefinitions>
+                <materialDesign:Card Grid.Column="0" materialDesign:ElevationAssist.Elevation="Dp4">
+                    <TabControl
+                        TabStripPlacement="Bottom"
+                        HorizontalContentAlignment="Center"
+                        materialDesign:ColorZoneAssist.Mode="Standard"
+                        materialDesign:NavigationRailAssist.ShowSelectionBackground="True"
+                        materialDesign:NavigationRailAssist.SelectionCornerRadius="16"
+                        SelectedIndex="{Binding SelectedTabIndex}" Background="#FFFFFFFF" Height="50">
+                        <TabItem>
+                            <TabItem.Header>
+                                <StackPanel MinWidth="72" Margin="4">
+                                    <materialDesign:PackIcon Kind="ViewDashboard" Width="24" Height="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="My Boards" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem>
+                            <TabItem.Header>
+                                <StackPanel MinWidth="72" Margin="4">
+                                    <materialDesign:PackIcon Kind="Compass" Width="24" Height="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Browse" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem>
+                            <TabItem.Header>
+                                <StackPanel MinWidth="72" Margin="4">
+                                    <materialDesign:PackIcon Kind="ProgressClock" Width="24" Height="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="In progress" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </TabItem.Header>
+                        </TabItem>
+                    </TabControl>
+                </materialDesign:Card>
+                <materialDesign:Chip
+                    Grid.Column="1" VerticalAlignment="Center" ToolTip="{Binding EmailToolTip}"
+                    IconBackground="{Binding IconColor}" Content="{Binding ChipName}" Height="32" Margin="23,0,5,0"
+                    IsHitTestVisible="False" Focusable="False">
+                    <materialDesign:Chip.Icon>
+                        <materialDesign:PackIcon Kind="AccountCircle"/>
+                    </materialDesign:Chip.Icon>
+                </materialDesign:Chip>
+                <Grid Grid.Column="2" Margin="4,0,12,0" VerticalAlignment="Center" Height="24">
+                    <Button materialDesign:ButtonAssist.CornerRadius="25" ToolTip="Log Out" Background="White" BorderBrush="#FFC3C2C2" Margin="10,0,10,0" Command="{Binding LogoutCommand}">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="LogoutVariant" Width="20" Height="20" Foreground="Red" VerticalAlignment="Center"/>
+                            <TextBlock Text="Log Out" Foreground="Red" Margin="8,0,0,0" VerticalAlignment="Center" Width="44"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- ═════════════════════  CONTENT  ═════════════════════ -->
+
+        <!-- ScrollViewer for Boards (My Boards/Browse) -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="10" Margin="0,66,0,0">
+            <ScrollViewer.Style>
+                <Style TargetType="ScrollViewer">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedTabIndex}" Value="2">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ScrollViewer.Style>
+            <ItemsControl ItemsSource="{Binding Boards}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <materialDesign:Card Width="252" Margin="8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Border Background="{Binding CardColor}" />
+                                <Button HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" Padding="4,2" FontSize="12" Command="{Binding DataContext.ViewBoardCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" Background="Transparent">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Eye" Width="16" Foreground="Snow" Height="16" Margin="0,0,4,0"/>
+                                        <TextBlock Text="View" Foreground="Snow"/>
+                                    </StackPanel>
+                                </Button>
+                                <StackPanel Grid.Row="1" Margin="8,20,8,8">
+                                    <TextBlock Text="{Binding Name, FallbackValue='Board Name'}" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding Owner, FallbackValue='Bob'}"/>
+                                </StackPanel>
+                                <Button Grid.Row="0" Margin="0,0,12,-18" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="4,2" IsEnabled="{Binding CanJoin}" Command="{Binding DataContext.JoinBoardCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="LoginVariant" Width="20" Height="20" Margin="0,0,4,0"/>
+                                        <TextBlock Text="Join" FontSize="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,3,3" Padding="4" ToolTip="Delete" Command="{Binding DataContext.DeleteBoardCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding Name}" Background="Transparent">
+                                    <materialDesign:PackIcon Kind="TrashCan" Foreground="Red" Width="18" Height="18"/>
+                                </Button>
+                            </Grid>
+                        </materialDesign:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- ScrollViewer for In-Progress Tasks -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="10" Margin="0,66,0,0">
+            <ScrollViewer.Style>
+                <Style TargetType="ScrollViewer">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedTabIndex}" Value="2">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ScrollViewer.Style>
+            <ItemsControl ItemsSource="{Binding InProgressTasks}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <materialDesign:Card Width="252" Margin="8" Padding="8" Background="White">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" Margin="0,0,0,4" TextTrimming="CharacterEllipsis"/>
+                                <Border BorderBrush="Gainsboro" BorderThickness="0,1,0,0" Margin="0,4,0,8"/>
+                                <TextBlock Text="{Binding BoardName, StringFormat='Board: {0}'}" FontStyle="Italic" Foreground="DarkSlateGray" Margin="0,0,0,8"/>
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,0,0,8" MaxHeight="60"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding DueDate, StringFormat='Due: {0:MMM dd, yyyy}'}" VerticalAlignment="Center" Foreground="IndianRed"/>
+                                    <materialDesign:Chip Grid.Column="1" Content="{Binding Assignee}" FontSize="10" Padding="6,2,6,2" IsHitTestVisible="False" Focusable="False"/>
+                                </Grid>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+
+        <Grid Margin="718,462,0,0" Grid.Row="1">
+            <materialDesign:PopupBox Grid.Row="1" Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="24" PlacementMode="TopAndAlignRightEdges" ToolTip="Create a new Board" StaysOpen="True" Background="#FF6CC571" Foreground="Black">
+                <materialDesign:Card Width="280">
+                    <StackPanel Margin="16">
+                        <TextBlock Text="Board Creation:" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,8" FontWeight="Bold" TextDecorations="Underline"/>
+                        <TextBox Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="Board Name" Margin="0,8,0,8" Name="boardName"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                            <Button Content="Create" Command="{Binding CreateBoardCommand}" CommandParameter="{Binding ElementName=boardName}" Style="{StaticResource MaterialDesignRaisedButton}" Margin="0,0,8,0" Background="#FF6CC571"/>
+                            <Button Content="Cancel" Command="{x:Static materialDesign:PopupBox.ClosePopupCommand}" Style="{StaticResource MaterialDesignOutlinedButton}" />
+                        </StackPanel>
+                    </StackPanel>
+                </materialDesign:Card>
+            </materialDesign:PopupBox>
+        </Grid>
+    </Grid>
+</UserControl>

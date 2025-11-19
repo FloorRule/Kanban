@@ -1,0 +1,16 @@
+commit: 03.06.25
+Convertor:
+	- class for all new convertor functions as static
+BoardService:
+	- Incoporated static convertor
+TaksService:
+	- Incoporated static convertor
+BoardFacade:
+	- In AddTask fixed broken dto link to TaskBL and in LoadData
+	- In TransferOwnerShip removed redundent check
+BoardBL:
+	- In AddTask fixed broken dto link to TaskBL
+TaskBK:
+	- In AddTask fixed broken dto link to TaskBL
+UserFacade:
+	- In Register fixed broken dto link to UserBL
