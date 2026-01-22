@@ -10,6 +10,12 @@ This project includes:
 
 The architecture was designed for clarity, separation of concerns, testing, and maintainability.
 
+
+
+https://github.com/user-attachments/assets/443aecee-c6cd-48cf-92cf-57415970568a
+
+
+
 ---
 
 ## Features
